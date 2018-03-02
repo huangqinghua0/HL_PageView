@@ -13,12 +13,62 @@
 @property (nonatomic, strong) NSArray *titles;
 @property (nonatomic, strong) UIView *selLine;
 @property (nonatomic, strong) UIButton *selectedButton;
+
 @end
 
 @implementation HL_SegmentView {
+    CGFloat _previousItemoffset;
+    CGRect _previousItemFrame;
     CGFloat _norRed , _norGreen , _norBlue;
     CGFloat _selRed , _selGreen , _selBlue;
     UIColor *_titleNorColor , *_titleSelColor;
+    CGFloat _segmentWidth;
+}
+
+- (instancetype)initWithFrame:(CGRect)frame titles:(NSArray *)titles {
+    self = [super initWithFrame:frame];
+    if (self) {
+        self.titles = titles;
+        _segmentWidth = frame.size.width;
+        [self setUpUI];
+    }
+    return self;
+}
+
+#pragma mark - 自定义按钮
+
+- (void)didClickItem:(UIButton *)item {
+//    if (self.pageVcScrollView.isDecelerating) return;
+//    NSInteger index = item.tag;
+//    self.willSelctedIndex = index;
+//    NSInteger direction = index - self.selectedIndex;
+//    UIViewController *vc = self.childControllers[index];
+//    [self.pageViewController setViewControllers:@[vc] direction:direction < 0 animated:YES completion:nil];
+//    _isClickItem = YES;
+}
+
+
+#pragma mark 私有方法
+
+- (void)setUpUI {
+    CGFloat speaceW = 16;
+    UIButton *previousBtn = nil;
+    for (int i = 0; i < self.titles.count; ++i) {
+        UIButton *btn = [UIButton buttonWithType:UIButtonTypeCustom];
+        btn.tag = i;
+        [btn setTitle:self.titles[i] forState:UIControlStateNormal];
+        [btn setTitleColor:self.titleNorColor forState:UIControlStateNormal];
+        [btn.titleLabel setFont:[UIFont systemFontOfSize:15]];
+        [btn addTarget:self action:@selector(didClickItem:) forControlEvents:UIControlEventTouchUpInside];
+        if (i == 0) {
+            btn.frame = CGRectMake(10, 0, [self getTextWidthWithString:self.titles[i]], 41);
+        }else {
+            btn.frame = CGRectMake(CGRectGetMaxX(previousBtn.frame) + speaceW, 0, [self getTextWidthWithString:self.titles[i]], 41);
+        }
+        previousBtn = btn;
+        [self.itemScrollView addSubview:btn];
+    }
+    [self.itemScrollView setContentSize:CGSizeMake(CGRectGetMaxX(previousBtn.frame) + 10, 0)];
 }
 
 - (CGFloat)getTextWidthWithString:(NSString *)string {
@@ -45,6 +95,33 @@
 }
 
 
+#pragma mark set/get
+
+- (void)setSelectedIndex:(NSInteger)selectedIndex {
+    _selectedIndex = selectedIndex;
+    [self.selectedButton setTitleColor:self.titleNorColor forState:UIControlStateNormal];
+    UIButton *btn = self.itemScrollView.subviews[selectedIndex];
+    [btn setTitleColor:self.titleSelColor forState:UIControlStateNormal];
+    self.selLine.frame = CGRectMake(btn.frame.origin.x, 41, btn.frame.size.width, 3);
+    self.selectedButton = btn;
+    CGFloat centerXOffset = btn.center.x - _segmentWidth/2.0;
+    if (btn.center.x  + _segmentWidth/2.0 > self.itemScrollView.contentSize.width) centerXOffset = self.itemScrollView.contentSize.width - _pageWidth;//向后滚
+    if (centerXOffset < 0) {//往回滚
+        centerXOffset = 0;
+    }
+    [self.itemScrollView setContentOffset:CGPointMake(centerXOffset , 0)];
+    _previousItemoffset = self.itemScrollView.contentOffset.x;
+    _previousItemFrame = self.selLine.frame;
+}
+
+- (UIScrollView *)itemScrollView {
+    if (_itemScrollView != nil) {
+        return _itemScrollView;
+    }
+    _itemScrollView = [[UIScrollView alloc]initWithFrame:CGRectMake(0, 0, _segmentWidth, 44)];
+    _itemScrollView.showsHorizontalScrollIndicator = NO;
+    return _itemScrollView;
+}
 
 - (void)setTitleNorColor:(UIColor *)titleNorColor {
     _titleNorColor = titleNorColor;
@@ -54,17 +131,6 @@
         }
     }
     [self getColorRGBColor:titleNorColor IsSelColor:NO];
-}
-
-#pragma mark set/get
-
-- (UIScrollView *)itemScrollView {
-    if (_itemScrollView != nil) {
-        return _itemScrollView;
-    }
-    _itemScrollView = [[UIScrollView alloc]initWithFrame:CGRectMake(0, 0, _pageWidth, 44)];
-    _itemScrollView.showsHorizontalScrollIndicator = NO;
-    return _itemScrollView;
 }
 
 - (UIColor *)titleNorColor {

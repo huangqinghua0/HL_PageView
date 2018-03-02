@@ -14,6 +14,8 @@
 @property (nonatomic, strong) UIColor *titleNorColor;
 ///标签选中的颜色 默认black
 @property (nonatomic, strong) UIColor *titleSelColor;
+///是否是点击了item
+@property (nonatomic, assign) BOOL isClickItem;
 
 /**
  创建pageView

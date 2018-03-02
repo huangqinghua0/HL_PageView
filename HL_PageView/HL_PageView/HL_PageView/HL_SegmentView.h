@@ -13,4 +13,10 @@
 @property (nonatomic, strong) UIColor *titleNorColor;
 ///标签选中的颜色 默认black
 @property (nonatomic, strong) UIColor *titleSelColor;
+///pageViewController内部的scrollView
+@property (nonatomic, weak) UIScrollView *pageVcScrollView;
+
+@property (nonatomic, assign) NSInteger selectedIndex;
+@property (nonatomic, assign) NSInteger willSelctedIndex;//拖拽时的下一个index
+
 @end
