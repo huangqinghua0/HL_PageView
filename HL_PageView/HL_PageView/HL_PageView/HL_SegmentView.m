@@ -7,12 +7,14 @@
 //
 
 #import "HL_SegmentView.h"
+#import "HL_PageView.h"
 
-@interface HL_SegmentView ()
+@interface HL_SegmentView () <HL_PageViewDelegate>
 @property (nonatomic, strong) UIScrollView *itemScrollView;
 @property (nonatomic, strong) NSArray *titles;
 @property (nonatomic, strong) UIView *selLine;
 @property (nonatomic, strong) UIButton *selectedButton;
+//@property (nonatomic, assign) BOOL isClickItem;
 
 @end
 
@@ -22,7 +24,7 @@
     CGFloat _norRed , _norGreen , _norBlue;
     CGFloat _selRed , _selGreen , _selBlue;
     UIColor *_titleNorColor , *_titleSelColor;
-    CGFloat _segmentWidth;
+    CGFloat _segmentWidth , _segmentHeight;
 }
 
 - (instancetype)initWithFrame:(CGRect)frame titles:(NSArray *)titles {
@@ -30,27 +32,58 @@
     if (self) {
         self.titles = titles;
         _segmentWidth = frame.size.width;
+        _segmentHeight = frame.size.height;
         [self setUpUI];
     }
     return self;
 }
 
-#pragma mark - 自定义按钮
+#pragma mark - HL_PageViewDelegate
 
-- (void)didClickItem:(UIButton *)item {
-//    if (self.pageVcScrollView.isDecelerating) return;
-//    NSInteger index = item.tag;
-//    self.willSelctedIndex = index;
-//    NSInteger direction = index - self.selectedIndex;
-//    UIViewController *vc = self.childControllers[index];
-//    [self.pageViewController setViewControllers:@[vc] direction:direction < 0 animated:YES completion:nil];
-//    _isClickItem = YES;
+- (void)pageView:(HL_PageView *)pageView ScrollAnimationToPrograss:(CGFloat)prograss {
+    CGFloat redOffset = _selRed - _norRed;
+    CGFloat greenOffset = _selGreen - _norGreen;
+    CGFloat blueOffset = _selBlue - _norBlue;
+    UIButton *nextBtn = self.itemScrollView.subviews[self.willSelctedIndex];
+    CGFloat lineWidthOffset = nextBtn.frame.size.width - _previousItemFrame.size.width;
+    CGFloat lineXOffset = nextBtn.frame.origin.x - _previousItemFrame.origin.x;
+    CGRect lineFrame = _previousItemFrame;
+    CGFloat x = lineFrame.origin.x;
+    CGFloat width = lineFrame.size.width;
+    lineFrame.origin.x =  x + prograss *lineXOffset;
+    lineFrame.size.width =  width + prograss *lineWidthOffset;
+    [nextBtn setTitleColor:[[UIColor alloc] initWithRed:(_norRed + redOffset*prograss)/255.0 green:(_norGreen + greenOffset*prograss)/255.0 blue:(_norBlue + blueOffset*prograss)/255.0 alpha:1] forState:UIControlStateNormal];
+    [self.selectedButton setTitleColor:[[UIColor alloc] initWithRed:(_selRed - redOffset*prograss)/255.0 green:(_selGreen - greenOffset*prograss)/255.0 blue:(_selBlue - blueOffset*prograss)/255.0 alpha:1] forState:UIControlStateNormal];
+    
+    CGFloat centerXOffset = nextBtn.center.x - _segmentWidth/2.0;
+    if (nextBtn.center.x  + _segmentWidth/2.0 > self.itemScrollView.contentSize.width)
+        centerXOffset = self.itemScrollView.contentSize.width - _segmentWidth;//向后滚
+    if (centerXOffset < 0) {//往回滚
+        centerXOffset = 0;
+    }
+    [self.itemScrollView setContentOffset:CGPointMake(_previousItemoffset + (centerXOffset - _previousItemoffset )*prograss , 0)];
+    self.selLine.frame = lineFrame;
+}
+
+- (void)pageViewScrollEndAnimationCheckColorWithpageView:(HL_PageView *)pageView {
+    [self handleItemColor];
 }
 
 
-#pragma mark 私有方法
+#pragma mark - 自定义按钮
 
+- (void)didClickItem:(UIButton *)item {
+    if (self.pageVcScrollView.isDecelerating || self.pageVcScrollView.isDragging || item == self.selectedButton) return;
+    NSInteger index = item.tag;
+    self.willSelctedIndex = index;
+    if (self.delegate && [self.delegate respondsToSelector:@selector(segmentView:SelectedItemCallBackItem:)]) {
+        [self.delegate segmentView:self SelectedItemCallBackItem:item];
+    }
+}
+
+#pragma mark - 私有方法
 - (void)setUpUI {
+    [self addSubview:self.itemScrollView];
     CGFloat speaceW = 16;
     UIButton *previousBtn = nil;
     for (int i = 0; i < self.titles.count; ++i) {
@@ -69,6 +102,7 @@
         [self.itemScrollView addSubview:btn];
     }
     [self.itemScrollView setContentSize:CGSizeMake(CGRectGetMaxX(previousBtn.frame) + 10, 0)];
+    self.selectedIndex = 0;
 }
 
 - (CGFloat)getTextWidthWithString:(NSString *)string {
@@ -94,33 +128,32 @@
     }
 }
 
-
-#pragma mark set/get
-
-- (void)setSelectedIndex:(NSInteger)selectedIndex {
-    _selectedIndex = selectedIndex;
-    [self.selectedButton setTitleColor:self.titleNorColor forState:UIControlStateNormal];
-    UIButton *btn = self.itemScrollView.subviews[selectedIndex];
-    [btn setTitleColor:self.titleSelColor forState:UIControlStateNormal];
-    self.selLine.frame = CGRectMake(btn.frame.origin.x, 41, btn.frame.size.width, 3);
-    self.selectedButton = btn;
-    CGFloat centerXOffset = btn.center.x - _segmentWidth/2.0;
-    if (btn.center.x  + _segmentWidth/2.0 > self.itemScrollView.contentSize.width) centerXOffset = self.itemScrollView.contentSize.width - _pageWidth;//向后滚
+- (void)handleItemColor {
+    self.selLine.frame = CGRectMake(self.selectedButton.frame.origin.x, 41, self.selectedButton.frame.size.width, 3);
+    CGFloat centerXOffset = self.selectedButton.center.x - _segmentWidth/2.0;
+    if (self.selectedButton.center.x  + _segmentWidth/2.0 > self.itemScrollView.contentSize.width) centerXOffset = self.itemScrollView.contentSize.width - _segmentWidth;//向后滚
     if (centerXOffset < 0) {//往回滚
         centerXOffset = 0;
     }
     [self.itemScrollView setContentOffset:CGPointMake(centerXOffset , 0)];
     _previousItemoffset = self.itemScrollView.contentOffset.x;
     _previousItemFrame = self.selLine.frame;
+    
+    for (UIButton *btn in self.itemScrollView.subviews) {
+        if ([btn isKindOfClass:[UIButton class]]) {
+            if (btn != self.selectedButton) [btn setTitleColor:self.titleNorColor forState:UIControlStateNormal];
+        }
+    }
+    [self.selectedButton setTitleColor:self.titleSelColor forState:UIControlStateNormal];
 }
 
-- (UIScrollView *)itemScrollView {
-    if (_itemScrollView != nil) {
-        return _itemScrollView;
-    }
-    _itemScrollView = [[UIScrollView alloc]initWithFrame:CGRectMake(0, 0, _segmentWidth, 44)];
-    _itemScrollView.showsHorizontalScrollIndicator = NO;
-    return _itemScrollView;
+
+#pragma mark - get/set
+
+- (void)setSelectedIndex:(NSInteger)selectedIndex {
+    _selectedIndex = selectedIndex;
+    self.selectedButton = self.itemScrollView.subviews[self.selectedIndex];
+    [self handleItemColor];
 }
 
 - (void)setTitleNorColor:(UIColor *)titleNorColor {
@@ -157,6 +190,15 @@
     return _titleSelColor;
 }
 
+- (UIScrollView *)itemScrollView {
+    if (_itemScrollView != nil) {
+        return _itemScrollView;
+    }
+    _itemScrollView = [[UIScrollView alloc]initWithFrame:CGRectMake(0, 0, _segmentWidth, _segmentHeight)];
+    _itemScrollView.showsHorizontalScrollIndicator = NO;
+    return _itemScrollView;
+}
+
 - (UIView *)selLine {
     if (_selLine != nil) {
         return _selLine;
@@ -167,4 +209,7 @@
     return _selLine;
 }
 
+
+
 @end
+

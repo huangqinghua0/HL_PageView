@@ -18,6 +18,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		9F1CE445204B848400A50E4F /* HL_PageViewDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HL_PageViewDelegate.h; sourceTree = "<group>"; };
+		9F1CE446204B84AD00A50E4F /* HL_SegmentViewDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HL_SegmentViewDelegate.h; sourceTree = "<group>"; };
 		9FCFA89D2049A44B00F6BCE4 /* HL_PageView.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HL_PageView.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9FCFA8A02049A44B00F6BCE4 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		9FCFA8A12049A44B00F6BCE4 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -85,6 +87,8 @@
 				9FCFA8BE2049A4F800F6BCE4 /* HL_PageView.m */,
 				9FCFA8C02049A52000F6BCE4 /* HL_SegmentView.h */,
 				9FCFA8C12049A52000F6BCE4 /* HL_SegmentView.m */,
+				9F1CE445204B848400A50E4F /* HL_PageViewDelegate.h */,
+				9F1CE446204B84AD00A50E4F /* HL_SegmentViewDelegate.h */,
 			);
 			path = HL_PageView;
 			sourceTree = "<group>";
@@ -299,6 +303,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = H6VRXQEFSN;
 				INFOPLIST_FILE = HL_PageView/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "HHLL.COMOPTION.HL-PageView";
@@ -312,6 +317,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = H6VRXQEFSN;
 				INFOPLIST_FILE = HL_PageView/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "HHLL.COMOPTION.HL-PageView";

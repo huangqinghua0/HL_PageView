@@ -8,6 +8,7 @@
 
 #import "ViewController.h"
 #import "HL_PageView.h"
+#import "HL_SegmentView.h"
 
 #define SCREEN_WIDTH [UIScreen mainScreen].bounds.size.width
 
@@ -29,13 +30,15 @@
 
 
 - (void)setUpUI {
-    HL_PageView *pageView = [[HL_PageView alloc]initWithFrame:CGRectMake(0, 64, SCREEN_WIDTH, SCREEN_HEIGHT - 64) superController:self titles:@[
-                                                                                                                                                @"全部0",@"粉丝福利1",@"自驾游2",@"亲子互动3",@"投资理财4",@"演讲交流5",@"电影KTV6",@"摄影7",@"美食8",@"同城交友9",
-                                                                                                                                                @"约炮10",@"有偿服务11",@"商业贷款12",@"裸贷们13",@"存金宝14",@"大染缸15",@"一点红16",@"碧螺春17",@"兴趣推荐18",@"还有更多吗19"] childControllers:self.childViewControllersArr];
-    pageView.titleNorColor = [UIColor blueColor];
-    pageView.titleSelColor = [UIColor purpleColor];
-    [self.view addSubview:pageView];
+    HL_SegmentView *segementView = [[HL_SegmentView alloc]initWithFrame:CGRectMake(0, 64, SCREEN_WIDTH, 44) titles: @[
+                                                                                                                      @"全部0",@"粉丝福利1",@"自驾游2",@"亲子互动3",@"投资理财4",@"演讲交流5",@"电影KTV6",@"摄影7",@"美食8",@"同城交友9",
+                                                                                                                      @"约炮10",@"有偿服务11",@"商业贷款12",@"裸贷们13",@"存金宝14",@"大染缸15",@"一点红16",@"碧螺春17",@"兴趣推荐18",@"还有更多吗19"]];
     
+    HL_PageView *pageView = [[HL_PageView alloc]initWithFrame:CGRectMake(0, 64 + 44, SCREEN_WIDTH, SCREEN_HEIGHT - 64 - 44) segmentView:segementView superController:self childControllers:self.childViewControllersArr];
+    [self.view addSubview:segementView];
+    [self.view addSubview:pageView];
+    segementView.delegate = pageView;
+    pageView.delegate = segementView;
 }
 
 - (void)didReceiveMemoryWarning {
